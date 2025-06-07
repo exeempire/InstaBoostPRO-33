@@ -25,36 +25,25 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Mock authentication endpoints for production
+// Mock authentication endpoints
 app.post('/api/auth/login', (req, res) => {
-  try {
-    const { instagramUsername, password } = req.body;
-    
-    if (!instagramUsername || !password) {
-      return res.status(400).json({ error: 'Username and password required' });
-    }
-
-    // Mock user creation for production demo
-    const mockUser = {
-      id: Math.floor(Math.random() * 10000),
-      uid: "UID" + Math.random().toString(36).substr(2, 9).toUpperCase(),
-      instagramUsername,
-      walletBalance: "10.00",
-      bonusClaimed: false
-    };
-
-    res.json({
-      success: true,
-      user: mockUser
-    });
-  } catch (error) {
-    res.status(400).json({ error: 'Login failed' });
+  const { instagramUsername, password } = req.body;
+  if (!instagramUsername || !password) {
+    return res.status(400).json({ error: 'Username and password required' });
   }
+
+  const mockUser = {
+    id: Math.floor(Math.random() * 10000),
+    uid: "UID" + Math.random().toString(36).substr(2, 9).toUpperCase(),
+    instagramUsername,
+    walletBalance: "10.00",
+    bonusClaimed: false
+  };
+
+  res.json({ success: true, user: mockUser });
 });
 
-// Mock additional endpoints ...
-
-// Catch-all handler: serve index.html for any non-API routes
+// Catch-all handler to serve index.html
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'client', 'index.html'));
 });
