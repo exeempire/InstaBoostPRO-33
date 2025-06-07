@@ -1,4 +1,3 @@
-
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -18,12 +17,48 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Serve static files from the dist/public directory (matches vite build output)
-app.use(express.static(path.join(__dirname, 'dist', 'public')));
+// Serve static files from the dist directory (Vite build output)
+app.use(express.static(path.join(__dirname, 'dist')));
 
 // Health check endpoint for Render
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// Mock authentication endpoints for production
+app.post('/api/auth/login', (req, res) => {
+  try {
+    const { instagramUsername, password } = req.body;
+    
+    if (!instagramUsername || !password) {
+      return res.status(400).json({ error: 'Username and password required' });
+    }
+
+    // Mock user creation for production demo
+    const mockUser = {
+      id: Math.floor(Math.random() * 10000),
+      uid: "UID" + Math.random().toString(36).substr(2, 9).toUpperCase(),
+      instagramUsername,
+      walletBalance: "10.00",
+      bonusClaimed: false
+    };
+
+    res.json({
+      success: true,
+      user: mockUser
+    });
+  } catch (error) {
+    res.status(400).json({ error: 'Login failed' });
+  }
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  res.json({ success: true });
+});
+
+app.get('/api/auth/user', (req, res) => {
+  // For production demo, return mock unauthorized
+  res.status(401).json({ error: 'Not authenticated' });
 });
 
 // API routes
@@ -47,9 +82,55 @@ app.get('/api/services', (req, res) => {
   res.json(services);
 });
 
+// Mock bonus claim endpoint
+app.post('/api/bonus/claim', (req, res) => {
+  res.json({ 
+    success: true, 
+    newBalance: "20.00",
+    message: "₹10 bonus claimed successfully!" 
+  });
+});
+
+// Mock orders endpoints
+app.post('/api/orders', (req, res) => {
+  res.json({ 
+    success: true, 
+    order: {
+      id: Math.floor(Math.random() * 10000),
+      orderId: "ORDER" + Date.now(),
+      serviceName: req.body.serviceName,
+      quantity: req.body.quantity,
+      price: req.body.price,
+      status: "Processing"
+    }
+  });
+});
+
+app.get('/api/orders', (req, res) => {
+  res.json([]);
+});
+
+// Mock payments endpoints
+app.post('/api/payments', (req, res) => {
+  res.json({ 
+    success: true, 
+    payment: {
+      id: Math.floor(Math.random() * 10000),
+      amount: req.body.amount,
+      utrNumber: req.body.utrNumber,
+      paymentMethod: req.body.paymentMethod,
+      status: "Pending"
+    }
+  });
+});
+
+app.get('/api/payments', (req, res) => {
+  res.json([]);
+});
+
 // Catch-all handler: send back React's index.html file for any non-API routes
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 // Use PORT environment variable provided by Render, fallback to 10000
