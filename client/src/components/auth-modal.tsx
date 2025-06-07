@@ -54,6 +54,8 @@ export function AuthModal({ isOpen, onClose, isFromBonus = false }: AuthModalPro
         description: "Welcome to InstaBoost Pro!",
       });
       onClose();
+      // Force page reload to update authentication state
+      window.location.reload();
     } catch (error: any) {
       toast({
         title: "Error",
