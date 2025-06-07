@@ -159,16 +159,40 @@ app.post('/api/auth/register', async (req, res) => {
 
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { instagramUsername, password } = req.body;
     
-    const user = await User.findOne({ username });
-    if (!user || user.password !== password) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    if (!instagramUsername || !password) {
+      return res.status(400).json({ error: 'Instagram username and password are required' });
+    }
+    
+    // Find user by Instagram username
+    let user = await User.findOne({ username: instagramUsername });
+    
+    if (!user) {
+      // Create new user if doesn't exist (as per your app logic)
+      user = new User({ 
+        username: instagramUsername, 
+        email: `${instagramUsername}@instagram.local`, 
+        password: password 
+      });
+      await user.save();
+      console.log('New user created:', instagramUsername);
     }
     
     req.session.userId = user._id;
-    res.json({ message: 'Login successful', user: { id: user._id, username: user.username, email: user.email, balance: user.balance } });
+    res.json({ 
+      success: true,
+      message: 'Login successful', 
+      user: { 
+        id: user._id, 
+        uid: `UID${user._id.toString().slice(-8).toUpperCase()}`,
+        instagramUsername: user.username, 
+        walletBalance: user.balance,
+        bonusClaimed: false
+      } 
+    });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ error: 'Login failed' });
   }
 });
