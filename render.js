@@ -18,8 +18,8 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Serve static files from the dist directory
-app.use(express.static(path.join(__dirname, 'dist')));
+// Serve static files from the dist/public directory (matches vite build output)
+app.use(express.static(path.join(__dirname, 'dist', 'public')));
 
 // Health check endpoint for Render
 app.get('/api/health', (req, res) => {
@@ -49,7 +49,7 @@ app.get('/api/services', (req, res) => {
 
 // Catch-all handler: send back React's index.html file for any non-API routes
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  res.sendFile(path.join(__dirname, 'dist', 'public', 'index.html'));
 });
 
 // Use PORT environment variable provided by Render, fallback to 10000
