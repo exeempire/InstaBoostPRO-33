@@ -17,7 +17,13 @@ interface LoginData {
 export function useAuth() {
   const { data: user, isLoading, error } = useQuery<User | null>({
     queryKey: ["/api/auth/user"],
-    retry: false,
+    retry: (failureCount, error: any) => {
+      // Don't retry on 401 (not authenticated)
+      if (error?.status === 401) return false;
+      return failureCount < 3;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 10, // 10 minutes
   });
 
   return {
