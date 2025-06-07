@@ -12,7 +12,13 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  // Use absolute URL in production
+  const baseUrl = process.env.NODE_ENV === 'production' 
+    ? 'https://instaboost-pro.onrender.com' 
+    : '';
+  const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
+  
+  const res = await fetch(fullUrl, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
@@ -29,7 +35,13 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://instaboost-pro.onrender.com' 
+      : '';
+    const url = queryKey[0] as string;
+    const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
+    
+    const res = await fetch(fullUrl, {
       credentials: "include",
     });
 
@@ -46,9 +58,6 @@ export const queryClient = new QueryClient({
     queries: {
       queryFn: async ({ queryKey }) => {
         const response = await apiRequest("GET", queryKey[0] as string);
-        if (!response.ok) {
-          throw { status: response.status, message: await response.text() };
-        }
         return response.json();
       },
       retry: (failureCount, error: any) => {
