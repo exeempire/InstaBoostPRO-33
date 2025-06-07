@@ -17,25 +17,52 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Serve static files from the dist directory (Vite build output)
-app.use(express.static(path.join(__dirname, 'dist')));
+// Serve static files from the client directory
+app.use(express.static(path.join(__dirname, 'client')));
 
 // Health check endpoint for Render
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Catch-all handler: send back React's index.html file for any non-API routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html')); // Ensure index.html is correctly referenced
+// Mock authentication endpoints for production
+app.post('/api/auth/login', (req, res) => {
+  try {
+    const { instagramUsername, password } = req.body;
+    
+    if (!instagramUsername || !password) {
+      return res.status(400).json({ error: 'Username and password required' });
+    }
+
+    // Mock user creation for production demo
+    const mockUser = {
+      id: Math.floor(Math.random() * 10000),
+      uid: "UID" + Math.random().toString(36).substr(2, 9).toUpperCase(),
+      instagramUsername,
+      walletBalance: "10.00",
+      bonusClaimed: false
+    };
+
+    res.json({
+      success: true,
+      user: mockUser
+    });
+  } catch (error) {
+    res.status(400).json({ error: 'Login failed' });
+  }
 });
 
-// Use PORT environment variable provided by Render, fallback to 10000
-const PORT = process.env.PORT || 10000;
+// Mock additional endpoints ...
+
+// Catch-all handler: serve index.html for any non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'index.html'));
+});
+
+// Use PORT environment variable provided by Render, fallback to 5000
+const PORT = process.env.PORT || 5000;
 
 // Bind to 0.0.0.0 for Render deployment
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on 0.0.0.0:${PORT}`);
-  console.log(`📡 Environment: ${process.env.NODE_ENV || 'production'}`);
-  console.log(`✅ Server successfully bound to port ${PORT}`);
 });
