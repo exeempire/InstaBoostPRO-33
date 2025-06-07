@@ -300,7 +300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!user) {
         console.log("Creating new user for:", instagramUsername);
-        // Create new user
+        // Create new user - For this app, any login creates a new user if not exists
         const uid = generateUID();
         user = await storage.createUser({
           uid,
@@ -312,6 +312,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isNewUser = true;
         console.log("New user created with ID:", user.id);
       } else {
+        // For existing users, allow login with any password (as per your app logic)
         console.log("Existing user found with ID:", user.id);
       }
 
